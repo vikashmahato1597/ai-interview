@@ -1,202 +1,148 @@
 # PulseHire AI
 
-Real-time AI voice interview MVP built with Next.js App Router, Supabase, Azure OpenAI, and Tailwind CSS.
+PulseHire AI is a voice-first AI interview platform built with Next.js, Supabase, Azure OpenAI, and Azure Speech.
 
-## Stack
+It lets an interviewer create an interview, publish a shareable candidate link, and review transcripts plus AI scoring after the interview is complete.
 
-- Next.js 16 App Router with API routes
-- TypeScript
-- Supabase Auth + PostgreSQL
-- Azure OpenAI for question generation, follow-up decisions, and evaluation
-- Tailwind CSS v4
-- Web Speech API + SpeechSynthesis browser fallback
+## What This Project Does
 
-## Core flow
+This application supports two main user experiences:
 
 ### Interviewer
 
-1. Sign up or sign in with Supabase email/password auth.
-2. Create an interview with `title`, `topic`, `difficulty`.
-3. Generate questions with Azure OpenAI or edit them manually.
-4. Publish the interview and copy the share link.
-5. Review candidates, transcripts, scores, and AI feedback in the dashboard.
+- Sign up or sign in
+- Create an interview with title, topic, and difficulty
+- Generate questions with AI or write them manually
+- Publish a share link
+- Track candidates on a dashboard
+- Review answers, transcripts, scores, and feedback
 
 ### Candidate
 
-1. Open the share link.
-2. Enter name and email.
-3. Grant microphone permission only.
-4. Hear one question at a time.
-5. Answer by voice.
-6. Let silence detection auto-submit or stop manually.
-7. Receive a final scorecard after completion.
+- Open a public interview link
+- Enter name and email
+- Grant microphone access
+- Hear one question at a time
+- Answer by voice
+- End the interview early if needed
+- See a final scorecard at the end
 
-## API routes
+## Why This Project Exists
 
-- `POST /api/generate-questions`
-- `POST /api/interviews`
-- `POST /api/start-interview`
-- `POST /api/submit-answer`
-- `POST /api/next-question`
-- `POST /api/evaluate`
-- `GET /api/speech-token`
+Traditional interview tools often focus on video meetings, scheduling, or generic forms. This project focuses on a narrower and more practical workflow:
 
-## Folder structure
+- A recruiter or hiring manager wants a reusable technical interview
+- A candidate should be able to answer without needing an account
+- The interview should feel conversational, not like a static form
+- The result should be structured enough for later review
 
-```text
-src/
-  app/
-    api/
-      evaluate/route.ts
-      generate-questions/route.ts
-      interviews/route.ts
-      next-question/route.ts
-      start-interview/route.ts
-      submit-answer/route.ts
-    dashboard/page.tsx
-    interview/[slug]/page.tsx
-    interviews/new/page.tsx
-    sign-in/page.tsx
-    sign-up/page.tsx
-    globals.css
-    layout.tsx
-    page.tsx
-  components/
-    auth/auth-form.tsx
-    interview/
-      interview-room.tsx
-      mic-button.tsx
-      question-card.tsx
-      score-card.tsx
-      timer.tsx
-      voice-player.tsx
-    interviews/interview-builder.tsx
-  hooks/
-    use-interview-session.ts
-    use-speech-recognition.ts
-  lib/
-    env.ts
-    openai.ts
-    prompts.ts
-    utils.ts
-    interview/
-      engine.ts
-      repository.ts
-      schemas.ts
-      types.ts
-    supabase/
-      admin.ts
-      browser.ts
-      middleware.ts
-      server.ts
-    voice/
-      browser.ts
-      config.ts
-middleware.ts
-supabase/schema.sql
-```
+The goal is to provide a lightweight technical interview system that is easier to run than live calls, while still capturing useful signals.
 
-## Environment
+## Key Capabilities
 
-Copy `.env.example` to `.env.local` and fill in:
+- Voice-based candidate interview flow
+- AI-generated interview questions
+- Manual question editing
+- Adaptive follow-up question logic
+- Transcript persistence
+- Structured AI scoring
+- Interviewer dashboard with candidate history
+- Optional early end for candidates
+- Dynamic share-link generation from the current request origin
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
+## Tech Stack
 
-AZURE_OPENAI_API_KEY=
-AZURE_OPENAI_ENDPOINT=
-AZURE_OPENAI_DEPLOYMENT=
+| Area | Technology | Why it is used |
+| --- | --- | --- |
+| Frontend framework | Next.js 16 App Router | Server rendering, route handlers, and clean client/server separation |
+| UI | React 19 | Component model for interviewer and candidate flows |
+| Language | TypeScript | Strong typing across pages, APIs, and domain models |
+| Styling | Tailwind CSS v4 | Fast UI iteration with utility classes |
+| Auth and database | Supabase | Email/password auth, Postgres, and a simple hosted backend |
+| Server-side Supabase integration | `@supabase/ssr` | Cookie-aware server and middleware helpers |
+| LLM | Azure OpenAI | Question generation, follow-up decisions, and evaluation |
+| AI client SDK | `openai` | Structured response parsing against Zod schemas |
+| Validation | Zod | Runtime validation for request payloads and AI output |
+| Speech-to-text | Azure Speech SDK, Web Speech API fallback | Candidate voice capture |
+| Text-to-speech | Azure Speech SDK, browser SpeechSynthesis fallback | Spoken interview prompts |
 
-NEXT_PUBLIC_TTS_PROVIDER=browser
-NEXT_PUBLIC_STT_PROVIDER=browser
+## Documentation
 
-AZURE_SPEECH_KEY=
-AZURE_SPEECH_REGION=
-NEXT_PUBLIC_AZURE_SPEECH_VOICE_NAME=en-US-AvaMultilingualNeural
-RETELL_API_KEY=
-```
+- [Getting Started And Usage](./docs/GETTING_STARTED.md)
+- [Architecture Guide](./docs/ARCHITECTURE.md)
+- [API Reference](./docs/API_REFERENCE.md)
 
-Notes:
+## Quick Start
 
-- The app is wired for Azure OpenAI through the Azure `openai/v1` endpoint shape.
-- Supabase public config accepts either `NEXT_PUBLIC_SUPABASE_ANON_KEY` or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`.
-- Azure Speech now uses a server-issued token route for browser SDK access.
-- Browser speech remains the fallback path.
-- Azure Speech and Retell are modeled as optional provider upgrades via env flags.
-
-## Setup
-
-1. Install dependencies:
+1. Install dependencies.
 
    ```bash
    npm install
    ```
 
-2. Run the Supabase SQL in [`supabase/schema.sql`](./supabase/schema.sql).
+2. Create `.env.local` from `.env.example`.
 
-3. Configure `.env.local`.
+3. Run the SQL schema in [supabase/schema.sql](./supabase/schema.sql).
 
-4. Start the app:
+4. Start the app.
 
    ```bash
    npm run dev
    ```
 
-5. Build for production:
+5. Open `http://localhost:3000`.
 
-   ```bash
-   npm run build
-   ```
+## Environment Variables
 
-## Prompting
+The application no longer needs `NEXT_PUBLIC_APP_URL`. Share links are generated from the current request origin.
 
-The prompt layer lives in [`src/lib/prompts.ts`](./src/lib/prompts.ts).
+Required or optional variables are documented in [docs/GETTING_STARTED.md](./docs/GETTING_STARTED.md).
 
-- Question generation prompt: creates concise, voice-friendly interview questions.
-- Next question prompt: decides between follow-up, next question, or completion.
-- Evaluation prompt: returns strict JSON with `technical`, `communication`, `confidence`, `overall`, and `feedback`.
+## Folder Overview
 
-## Database model
+```text
+src/
+  app/
+    api/
+    dashboard/
+    interview/[slug]/
+    interviews/new/
+    sign-in/
+    sign-up/
+  components/
+    auth/
+    interview/
+    interviews/
+    navigation/
+  hooks/
+  lib/
+    interview/
+    supabase/
+    voice/
+supabase/
+  schema.sql
+```
 
-Tables in the Supabase schema:
+## Current Product Scope
 
-- `users`
-- `interviews`
-- `questions`
-- `candidates`
-- `responses`
-- `results`
+This repository is currently an MVP with clear tradeoffs:
 
-The `candidates.session_state` JSON field stores:
+- Candidate authentication is intentionally skipped for the share-link flow
+- Interview progression is request/response based, not real-time streaming
+- Retell is modeled as a future extension point, not a fully wired provider
+- Results are AI-assisted and should support review, not replace judgment
 
-- `currentQuestionIndex`
-- `currentQuestionId`
-- `currentQuestionText`
-- `followUpDepth`
-- `askedQuestions`
-- `previousAnswers`
-- `difficulty`
+## Commands
 
-## Voice behavior
+```bash
+npm run dev
+npm run build
+npm run start
+npm run lint
+```
 
-- Text-to-speech: Azure Speech SDK is supported through `/api/speech-token`, with browser `SpeechSynthesis` fallback.
-- Speech-to-text: Azure Speech SDK is supported through `/api/speech-token`, with Web Speech API fallback.
-- Silence detection: handled in `use-speech-recognition.ts`.
-- Auto-progress: candidate answers are saved, then `/api/next-question` decides the next step.
+## Who Should Read Which Doc
 
-## What is production-minded here
-
-- Server-only Azure OpenAI usage
-- Server-side Supabase helpers
-- Typed request validation with `zod`
-- Clear separation between pages, hooks, components, domain logic, and persistence
-- SQL schema with enums, indexes, trigger-based user profile sync, and RLS
-
-## Current limits
-
-- Retell is still an extension point and is not wired yet.
-- Candidate auth is intentionally skipped for the share-link flow.
-- No real-time streaming; this MVP uses request/response turns only.
+- Use [Getting Started And Usage](./docs/GETTING_STARTED.md) if you want to run or operate the app
+- Use [Architecture Guide](./docs/ARCHITECTURE.md) if you want to understand how it works internally
+- Use [API Reference](./docs/API_REFERENCE.md) if you want endpoint-level request and response details
